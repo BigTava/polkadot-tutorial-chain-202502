@@ -2,6 +2,15 @@
 
 pub use pallet::*;
 
+use frame_support::pallet_macros::*;
+
+mod config;
+mod errors;
+mod events;
+
+#[import_section(config::config)]
+#[import_section(errors::errors)]
+#[import_section(events::events)]
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
@@ -11,64 +20,12 @@ pub mod pallet {
     #[pallet::pallet]
     pub struct Pallet<T>(_);
 
-    // Configuration trait for the pallet.
-    #[pallet::config]
-    pub trait Config: frame_system::Config {
-        // Defines the event type for the pallet.
-        type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-
-        // Defines the maximum value the counter can hold.
-        #[pallet::constant]
-        type CounterMaxValue: Get<u32>;
-    }
-
-    #[pallet::event]
-    #[pallet::generate_deposit(pub(super) fn deposit_event)]
-    pub enum Event<T: Config> {
-        /// The counter value has been set to a new value by Root.
-        CounterValueSet {
-            /// The new value set.
-            counter_value: u32,
-        },
-        /// A user has successfully incremented the counter.
-        CounterIncremented {
-            /// The new value set.
-            counter_value: u32,
-            /// The account who incremented the counter.
-            who: T::AccountId,
-            /// The amount by which the counter was incremented.
-            incremented_amount: u32,
-        },
-        /// A user has successfully decremented the counter.
-        CounterDecremented {
-            /// The new value set.
-            counter_value: u32,
-            /// The account who decremented the counter.
-            who: T::AccountId,
-            /// The amount by which the counter was decremented.
-            decremented_amount: u32,
-        },
-    }
-
-    /// Storage for the current value of the counter.
     #[pallet::storage]
     pub type CounterValue<T> = StorageValue<_, u32>;
 
     /// Storage map to track the number of interactions performed by each account.
     #[pallet::storage]
     pub type UserInteractions<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, u32>;
-
-    #[pallet::error]
-    pub enum Error<T> {
-        /// The counter value exceeds the maximum allowed value.
-        CounterValueExceedsMax,
-        /// The counter value cannot be decremented below zero.
-        CounterValueBelowZero,
-        /// Overflow occurred in the counter.
-        CounterOverflow,
-        /// Overflow occurred in user interactions.
-        UserInteractionOverflow,
-    }
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
