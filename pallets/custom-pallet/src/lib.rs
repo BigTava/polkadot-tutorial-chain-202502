@@ -1,13 +1,13 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-pub use pallet::*;
 use frame_support::pallet_macros::*;
+pub use pallet::*;
 
-#[cfg(test)]
-mod tests;
 mod config;
 mod errors;
 mod events;
+#[cfg(test)]
+mod tests;
 
 #[import_section(config::config)]
 #[import_section(errors::errors)]
@@ -40,6 +40,32 @@ pub mod pallet {
         #[pallet::call_index(0)]
         #[pallet::weight(0)]
         pub fn set_counter_value(origin: OriginFor<T>, new_value: u32) -> DispatchResult {
+            ensure_root(origin)?;
+
+            ensure!(
+                new_value <= T::CounterMaxValue::get(),
+                Error::<T>::CounterValueExceedsMax
+            );
+
+            CounterValue::<T>::put(new_value);
+
+            Self::deposit_event(Event::<T>::CounterValueSet {
+                counter_value: new_value,
+            });
+
+            Ok(())
+        }
+
+        /// Get the value of the counter.
+        ///
+        /// The dispatch origin of this call must be _Root_.
+        ///
+        /// - `new_value`: The new value to set for the counter.
+        ///
+        /// Emits `CounterValueSet` event when successful.
+        #[pallet::call_index(0)]
+        #[pallet::weight(0)]
+        pub fn get_counter_value(origin: OriginFor<T>) -> DispatchResult {
             ensure_root(origin)?;
 
             ensure!(
