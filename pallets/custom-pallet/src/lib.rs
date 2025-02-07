@@ -1,9 +1,10 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
-
 use frame_support::pallet_macros::*;
 
+#[cfg(test)]
+mod tests;
 mod config;
 mod errors;
 mod events;
