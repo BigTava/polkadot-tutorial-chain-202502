@@ -11,5 +11,7 @@ mod config {
         // Defines the maximum value the counter can hold.
         #[pallet::constant]
         type CounterMaxValue: Get<u32>;
+
+        type WeightInfo: WeightInfo;
     }
 }
